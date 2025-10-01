@@ -3,7 +3,6 @@ import tensorflow as tf
 import joblib
 import numpy as np
 from typing import Tuple, Any
-from pathlib import Path
 
 # ------------------------------
 # Configuration
@@ -32,7 +31,6 @@ model, vectorizer, label_encoder = load_model_and_tools()
 # ------------------------------
 # Streamlit UI
 # ------------------------------
-
 def display_header():
     st.title("🧠 Sentiment / Text Classification App")
     st.write("Enter a text below to get the model's prediction.")
@@ -46,25 +44,6 @@ def get_user_input() -> str:
         placeholder="Type a review, message, or sentence..."
     )
 
-display_header()
-user_input = get_user_input()
-
-if st.button("Predict", type="primary"):
-    if user_input.strip() == "":
-        st.warning("Please enter some text.")
-    else:
-        # ------------------------------
-        # Preprocess input
-        # ------------------------------
-        X_input = vectorizer.transform([user_input])  # transform (do not fit!)
-
-        # ------------------------------
-        # Model Prediction
-        # ------------------------------
-        pred_proba = model.predict(X_input.toarray())
-        pred_index = np.argmax(pred_proba, axis=1)[0]
-        pred_label = label_encoder.inverse_transform([pred_index])[0]
-
 def display_prediction_results(pred_label: str, pred_proba: np.ndarray, label_encoder) -> None:
     """Display prediction results and confidence scores."""
     st.success(f"✅ **Prediction:** {pred_label}")
@@ -77,4 +56,24 @@ def display_prediction_results(pred_label: str, pred_proba: np.ndarray, label_en
     st.markdown("---")
     st.caption("Built with Streamlit, TensorFlow, and TF-IDF ✨")
 
-display_prediction_results(pred_label, pred_proba, label_encoder)
+
+# ------------------------------
+# Main app flow
+# ------------------------------
+display_header()
+user_input = get_user_input()
+
+if st.button("Predict", type="primary"):
+    if user_input.strip() == "":
+        st.warning("Please enter some text.")
+    else:
+        # Preprocess input
+        X_input = vectorizer.transform([user_input])
+
+        # Predict
+        pred_proba = model.predict(X_input.toarray())
+        pred_index = np.argmax(pred_proba, axis=1)[0]
+        pred_label = label_encoder.inverse_transform([pred_index])[0]
+
+        # Display results
+        display_prediction_results(pred_label, pred_proba, label_encoder)
